@@ -8,7 +8,7 @@ def AssignQuant(a,pso):
     ps = [0.0] + ps
     print(ps)
     out = []
-    rng = range(1,len(qs)+1)
+    rng = range(1,len(ps)+1)
     print(rng)
     for x in np.nditer(a,op_flags=['readwrite']):
         for i in rng: 
@@ -18,6 +18,45 @@ def AssignQuant(a,pso):
                 break
     outarr = np.array(out)
     return(outarr)
+
+def Quantiles(in_features, in_field, in_quant, in_qdir):
+    print("converting to numpy")
+    nparray = da.FeatureClassToNumPyArray(in_features,["OID@",in_field],skip_nulls = True)
+    
+    print("calculating quantiles")
+    n = 1.0/float(in_quant)
+    qs = [n*x*100 for x in xrange(1,int(in_quant)+1)]
+    print(qs)
+    
+    print("calculating percentiles")
+    flcol = np.array(nparray[[in_field]], np.float)
+    ps = np.percentile(flcol, qs)
+    print(ps)
+    
+    print("Adding new numpy field")
+    newfldname = "".join(["Q",in_field])
+    fldtype = (newfldname,'int',)
+    dtype=nparray.dtype.descr
+    dtype.append(fldtype)
+    dtype2 = np.dtype(dtype)
+    nparray2 = np.empty(nparray.shape, dtype=dtype2)
+    for name in nparray.dtype.names:
+        nparray2[name] = nparray[name]
+    
+    print("Assign Quantiles")
+    out = AssignQuant(flcol,ps)
+    if in_qdir == "Reverse":
+        out = (int(in_quant) + 1) - out
+    
+    nparray2[newfldname] = out
+    nparray3 = nparray2[['OID@',newfldname]]
+   
+    print("Extend table to include the new values")
+    da.ExtendTable(in_features,"OBJECTID" ,nparray3,"OID@")
+
+    print("Done")
+
+
 
 class Toolbox(object):
     def __init__(self):
@@ -73,7 +112,7 @@ class QuantileCalc(object):
         
         param4 = arcpy.Parameter(
             displayName="Output Features",
-            name="out_features", # Normal or Reverse
+            name="out_features", 
             datatype="GPFeatureLayer",
             parameterType="Derived",
             direction="Output")
@@ -108,48 +147,18 @@ class QuantileCalc(object):
         in_quant = parameters[2].valueAsText
         in_qdir = parameters[3].valueAsText
         
-        # Convert to numpyarray
-        
-        messages.addMessage("Converting to Numpy")
-        nparray = da.FeatureClassToNumPyArray(in_features,["OID@",in_field],skip_nulls = True)
-        messages.addMessage("Converted to Numpy")
-        
-        # Set percentiles.
-        n = 1.0/float(in_quant)
-        qs = [n*x*100 for x in xrange(1,int(in_quant)+1)]
-        
-        flcol = np.array(nparray[[in_field]], np.float)
-        ps = np.percentile(flcol, qs)
-        
-        for p in ps:
-            messages.addMessage("Quantile: {q}".format(q = str(p)))
-         
-        # make new field name to hold quantiles 
-        messages.addMessage("Adding field to numpyarray")  
-        newfldname = "".join(["Q",in_field])
-        fldtype = (newfldname,'<i4') # have tried '<i4', and 'integer' same result
-        dtype=nparray.dtype.descr
-        dtype.append(fldtype)
-        dtype2 = np.dtype(dtype) # Error unrecognized data type
-        nparray2 = np.empty(nparray.shape, dtype=dtype2) 
-        for name in nparray.dtype.names:
-            nparray2[name] = nparray[name]
-
-        
-        # Setting quantiles
-        messages.addMessage("Setting quantiles")
-        out = AssignQuant(flcol,ps)
-        
-        if in_qdir == "Reverse":
-            messages.addMessage("Quantiles are in reverse order")
-            out = (int(in_quant) + 1) - out
-        
-        nparray2[newfldname] = out
-        nparray3 = nparray2[['OID@',newfldname]]
-        
-        messages.addMessage("Joining to table")
-        arcpy.da.ExtendTable(in_features,"OBJECTID" ,nparray3,"OID@")
+        # Execute function above
+        messages.addMessage("Starting Quantile Function")
+        Quantiles(in_features, in_field, in_quant, in_qdir)
+        messages.addMessage("Quantile Function Complete")
         
         return
 
-
+if __name__ == "__main__":
+    in_features = r"D:\Projects\crc\QuantileCalc\Quantiles.gdb\Roi_data"
+    in_field = "people_mean"
+    in_quant = 5
+    in_qdir = "Normal"
+       
+    Quantiles(in_features, in_field, in_quant, in_qdir)
+    
