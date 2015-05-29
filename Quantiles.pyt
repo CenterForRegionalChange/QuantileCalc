@@ -35,7 +35,7 @@ def Quantiles(in_features, in_field, in_quant, in_qdir):
     
     print("Adding new numpy field")
     newfldname = "".join(["Q",in_field])
-    fldtype = (newfldname,'int',)
+    fldtype = (newfldname,'int32',)
     dtype=nparray.dtype.descr
     dtype.append(fldtype)
     dtype2 = np.dtype(dtype)
