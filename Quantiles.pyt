@@ -1,7 +1,8 @@
 import arcpy
 import arcpy.da as da
 import numpy as np
-import numpy.ma as ma
+import numpy.lib.recfunctions as rfn
+
 
 def AssignQuant(a,pso):
     ps = [x for x in pso]
@@ -35,20 +36,21 @@ def Quantiles(in_features, in_field, in_quant, in_qdir):
     
     print("Adding new numpy field")
     newfldname = "".join(["Q",in_field])
-    fldtype = (newfldname,'int32',)
-    dtype=nparray.dtype.descr
-    dtype.append(fldtype)
-    dtype2 = np.dtype(dtype)
-    nparray2 = np.empty(nparray.shape, dtype=dtype2)
-    for name in nparray.dtype.names:
-        nparray2[name] = nparray[name]
+#     fldtype = (newfldname,'int32',)
+#     dtype=nparray.dtype.descr
+#     dtype.append(fldtype)
+#     dtype2 = np.dtype(dtype)
+#     nparray2 = np.empty(nparray.shape, dtype=dtype2)
+#     for name in nparray.dtype.names:
+#         nparray2[name] = nparray[name]
     
     print("Assign Quantiles")
     out = AssignQuant(flcol,ps)
     if in_qdir == "Reverse":
         out = (int(in_quant) + 1) - out
     
-    nparray2[newfldname] = out
+    nparray2 = rfn.append_fields(nparray, newfldname, out, usemask = False)
+    #nparray2[newfldname] = out
     nparray3 = nparray2[['OID@',newfldname]]
    
     print("Extend table to include the new values")
@@ -154,11 +156,11 @@ class QuantileCalc(object):
         
         return
 
-if __name__ == "__main__":
-    in_features = r"D:\Projects\crc\QuantileCalc\Quantiles.gdb\Roi_data"
-    in_field = "people_mean"
-    in_quant = 5
-    in_qdir = "Normal"
-       
-    Quantiles(in_features, in_field, in_quant, in_qdir)
+# if __name__ == "__main__":
+#     in_features = r"D:\Projects\crc\QuantileCalc\Quantiles.gdb\Roi_data"
+#     in_field = "people_mean"
+#     in_quant = 5
+#     in_qdir = "Normal"
+#        
+#     Quantiles(in_features, in_field, in_quant, in_qdir)
     
