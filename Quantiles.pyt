@@ -36,10 +36,10 @@ def Quantiles(in_features, in_field, in_quant, in_qdir):
     print("Adding new numpy field")
     newfldname = "".join(["Q",in_field])
     fldtype = (newfldname,'int32',)
-    dtype=nparray.dtype.descr
-    dtype.append(fldtype)
-    dtype2 = np.dtype(dtype)
-    nparray2 = np.empty(nparray.shape, dtype=dtype2)
+    dtypeList=nparray.dtype.descr
+    dtypeList.append(fldtype)
+    dtype = np.dtype(dtypeList)
+    nparray2 = np.empty(nparray.shape, dtype=dtype)
     for name in nparray.dtype.names:
         nparray2[name] = nparray[name]
     
