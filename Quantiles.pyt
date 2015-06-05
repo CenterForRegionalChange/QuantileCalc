@@ -49,7 +49,7 @@ def Quantiles(in_features, in_field, in_quant, in_qdir):
     if in_qdir == "Reverse":
         out = (int(in_quant) + 1) - out
     
-    nparray2 = rfn.append_fields(nparray, newfldname, out, usemask = False)
+    nparray2 = rfn.append_fields(nparray, str(newfldname), out, usemask = False)
     #nparray2[newfldname] = out
     nparray3 = nparray2[['OID@',newfldname]]
    
