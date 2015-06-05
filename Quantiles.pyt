@@ -156,11 +156,11 @@ class QuantileCalc(object):
         
         return
 
-# if __name__ == "__main__":
-#     in_features = r"D:\Projects\crc\QuantileCalc\Quantiles.gdb\Roi_data"
-#     in_field = "people_mean"
-#     in_quant = 5
-#     in_qdir = "Normal"
-#        
-#     Quantiles(in_features, in_field, in_quant, in_qdir)
+if __name__ == "__main__":
+    in_features = r"D:\Projects\crc\QuantileCalc\Quantiles.gdb\Roi_data"
+    in_field = "people_mean"
+    in_quant = 5
+    in_qdir = "Normal"
+        
+    Quantiles(in_features, in_field, in_quant, in_qdir)
     
