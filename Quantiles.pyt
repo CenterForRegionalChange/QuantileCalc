@@ -1,61 +1,56 @@
 import arcpy
 import arcpy.da as da
 import numpy as np
-import numpy.ma as ma
+import numpy.lib.recfunctions as rfn
+import QuantFunc as qf
 
-def AssignQuant(a,pso):
-    ps = [x for x in pso]
-    ps = [0.0] + ps
-    print(ps)
-    out = []
-    rng = range(1,len(ps)+1)
-    print(rng)
-    for x in np.nditer(a,op_flags=['readwrite']):
-        for i in rng: 
-            if  ps[i-1] < x <= ps[i]:
-                #x = i+1
-                out.append(i)
-                break
-    outarr = np.array(out)
-    return(outarr)
 
-def Quantiles(in_features, in_field, in_quant, in_qdir):
-    print("converting to numpy")
-    nparray = da.FeatureClassToNumPyArray(in_features,["OID@",in_field],skip_nulls = True)
-    
-    print("calculating quantiles")
-    n = 1.0/float(in_quant)
-    qs = [n*x*100 for x in xrange(1,int(in_quant)+1)]
-    print(qs)
-    
-    print("calculating percentiles")
-    flcol = np.array(nparray[[in_field]], np.float)
-    ps = np.percentile(flcol, qs)
-    print(ps)
-    
-    print("Adding new numpy field")
-    newfldname = "".join(["Q",in_field])
-    fldtype = (newfldname,'int32',)
-    dtypeList=nparray.dtype.descr
-    dtypeList.append(fldtype)
-    dtype = np.dtype(dtypeList)
-    nparray2 = np.empty(nparray.shape, dtype=dtype)
-    for name in nparray.dtype.names:
-        nparray2[name] = nparray[name]
-    
-    print("Assign Quantiles")
-    out = AssignQuant(flcol,ps)
-    if in_qdir == "Reverse":
-        out = (int(in_quant) + 1) - out
-    
-    nparray2[newfldname] = out
-    nparray3 = nparray2[['OID@',newfldname]]
-   
-    print("Extend table to include the new values")
-    da.ExtendTable(in_features,"OBJECTID" ,nparray3,"OID@")
-
-    print("Done")
-
+# def AssignQuant(a,pso):
+#     ps = [x for x in pso]
+#     ps = [0.0] + ps
+#     print(ps)
+#     out = []
+#     rng = range(1,len(ps)+1)
+#     print(rng)
+#     for x in np.nditer(a,op_flags=['readwrite']):
+#         for i in rng: 
+#             if  ps[i-1] < x <= ps[i]:
+#                 #x = i+1
+#                 out.append(i)
+#                 break
+#     outarr = np.array(out)
+#     return(outarr)
+# 
+# def Quantiles(in_features, in_field, in_quant, in_qdir):
+#     print("converting to numpy")
+#     nparray = da.FeatureClassToNumPyArray(in_features,["OID@",in_field],skip_nulls = True)
+#      
+#     print("calculating quantiles")
+#     n = 1.0/float(in_quant)
+#     qs = [n*x*100 for x in xrange(1,int(in_quant)+1)]
+#     print(qs)
+#      
+#     print("calculating percentiles")
+#     flcol = np.array(nparray[[in_field]], np.float)
+#     ps = np.percentile(flcol, qs)
+#     print(ps)
+#      
+#     print("Adding new numpy field")
+#     newfldname = "".join(["Q",in_field])
+#      
+#     print("Assign Quantiles")
+#     out = AssignQuant(flcol,ps)
+#     if in_qdir == "Reverse":
+#         out = (int(in_quant) + 1) - out
+#      
+#     nparray2 = rfn.append_fields(nparray, str(newfldname), out, usemask = False)
+#     #nparray2[newfldname] = out
+#     nparray3 = nparray2[['OID@',newfldname]]
+#     
+#     print("Extend table to include the new values")
+#     da.ExtendTable(in_features,"OBJECTID" ,nparray3,"OID@")
+#  
+#     print("Done")
 
 
 class Toolbox(object):
@@ -75,7 +70,7 @@ class QuantileCalc(object):
         self.label = "Quantile Calculator"
         self.description = "A tool to add a new field, and calculate the quantile into it for each selected element."
         self.canRunInBackground = False
-        self.category = 'Quantiles'
+        self.category = None
 
     def getParameterInfo(self):
         """Define parameter definitions"""
@@ -149,16 +144,16 @@ class QuantileCalc(object):
         
         # Execute function above
         messages.addMessage("Starting Quantile Function")
-        Quantiles(in_features, in_field, in_quant, in_qdir)
+        qf.Quantiles(in_features, in_field, in_quant, in_qdir)
         messages.addMessage("Quantile Function Complete")
         
         return
 
-if __name__ == "__main__":
-    in_features = r"D:\Projects\crc\QuantileCalc\Quantiles.gdb\Roi_data"
-    in_field = "people_mean"
-    in_quant = 5
-    in_qdir = "Normal"
-       
-    Quantiles(in_features, in_field, in_quant, in_qdir)
+# if __name__ == "__main__":
+#     in_features = r"D:\Projects\crc\QuantileCalc\Quantiles.gdb\Roi_data"
+#     in_field = "people_mean"
+#     in_quant = 5
+#     in_qdir = "Normal"
+#         
+#     Quantiles(in_features, in_field, in_quant, in_qdir)
     
