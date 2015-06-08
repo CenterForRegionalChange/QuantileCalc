@@ -36,7 +36,7 @@ def Quantiles(in_features, in_field, in_quant, in_qdir):
     #print(qs)
      
     #print("calculating percentiles")
-    flcol = np.array(nparray[[in_field]], np.float)
+    flcol = np.array(nparray[[str(in_field)]], np.float)
     ps = np.percentile(flcol, qs)
     minval = flcol.min()
     #print(ps)
@@ -46,8 +46,8 @@ def Quantiles(in_features, in_field, in_quant, in_qdir):
      
     #print("Assign Quantiles")
     out = AssignQuant(flcol,ps,minval)
-#     if in_qdir == "Reverse":
-#         out = (int(in_quant) + 1) - out
+    if in_qdir == "Reverse":
+        out = (int(in_quant) + 1) - out
      
     nparray2 = rfn.append_fields(nparray, str(newfldname), out, usemask = False)
     #nparray2[newfldname] = out
