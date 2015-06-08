@@ -36,13 +36,6 @@ def Quantiles(in_features, in_field, in_quant, in_qdir):
     
     print("Adding new numpy field")
     newfldname = "".join(["Q",in_field])
-#     fldtype = (newfldname,'int32',)
-#     dtype=nparray.dtype.descr
-#     dtype.append(fldtype)
-#     dtype2 = np.dtype(dtype)
-#     nparray2 = np.empty(nparray.shape, dtype=dtype2)
-#     for name in nparray.dtype.names:
-#         nparray2[name] = nparray[name]
     
     print("Assign Quantiles")
     out = AssignQuant(flcol,ps)
@@ -57,7 +50,6 @@ def Quantiles(in_features, in_field, in_quant, in_qdir):
     da.ExtendTable(in_features,"OBJECTID" ,nparray3,"OID@")
 
     print("Done")
-
 
 
 class Toolbox(object):
