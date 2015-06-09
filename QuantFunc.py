@@ -51,7 +51,7 @@ def Quantiles(in_features, in_field, in_quant, in_qdir,newfldname):
      
     nparray2 = rfn.append_fields(nparray, str(newfldname), out, usemask = False)
     #nparray2[newfldname] = out
-    nparray3 = nparray2[['OID@',newfldname]]
+    nparray3 = nparray2[['OID@',str(newfldname)]]
     
     #print("Extend table to include the new values")
     da.ExtendTable(in_features,"OBJECTID" ,nparray3,"OID@")
