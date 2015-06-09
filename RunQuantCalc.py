@@ -34,7 +34,8 @@ for fld in fldlist:
         print("Working on: {fld}".format(fld=fld))
         whereClause = "" # whereClause = "totpop > 3000"  # or "COUNTYFP10 = '037'"  ## Moving the whereClause inside the loop slows down the operation because it's doing the selection on each iteration, but allows for more specific handling of the layer.
         arcpy.SelectLayerByAttribute_management ("quant_lyr", "NEW_SELECTION", whereClause)
-        qf.Quantiles("quant_lyr", fld, qnum, qdir)
+        newfldname = "".join(["Q",fld]) # set up the layer name
+        qf.Quantiles("quant_lyr", fld, qnum, qdir,newfldname)
     except Exception, e:
         print("Failed on field")
         print(str(e))

@@ -105,16 +105,25 @@ class QuantileCalc(object):
             direction="Input")
         param3.filter.list = ['Normal','Reverse']
         
+        
         param4 = arcpy.Parameter(
+            displayName="New Field Name",
+            name="newfldname",
+            datatype="GPString",
+            parameterType="Required",
+            direction="Input")
+               
+        param5 = arcpy.Parameter(
             displayName="Output Features",
             name="out_features", 
             datatype="GPFeatureLayer",
             parameterType="Derived",
             direction="Output")
-        param4.parameterDependencies = [param0.name]
-        param4.schema.clone = True
+        param5.parameterDependencies = [param0.name]
+        param5.schema.clone = True
         
-        params = [param0,param1,param2,param3,param4] #[param0,param1,param2,param3,param4]
+                
+        params = [param0,param1,param2,param3,param4,param5] #[param0,param1,param2,param3,param4]
 
         return params
 
@@ -141,10 +150,11 @@ class QuantileCalc(object):
         in_field = parameters[1].valueAsText
         in_quant = parameters[2].valueAsText
         in_qdir = parameters[3].valueAsText
+        newfldname = parameters[4].valueAsText
         
         # Execute function above
         messages.addMessage("Starting Quantile Function")
-        qf.Quantiles(in_features, in_field, in_quant, in_qdir)
+        qf.Quantiles(in_features, in_field, in_quant, in_qdir,newfldname)
         messages.addMessage("Quantile Function Complete")
         
         return

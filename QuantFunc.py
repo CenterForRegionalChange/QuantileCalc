@@ -26,7 +26,7 @@ def AssignQuant(a,pso,minval):
     outarr = np.array(out)
     return(outarr)
 
-def Quantiles(in_features, in_field, in_quant, in_qdir):
+def Quantiles(in_features, in_field, in_quant, in_qdir,newfldname):
     #print("converting to numpy")
     nparray = da.FeatureClassToNumPyArray(in_features,["OID@",in_field],skip_nulls = True)
      
@@ -42,7 +42,7 @@ def Quantiles(in_features, in_field, in_quant, in_qdir):
     #print(ps)
      
     #print("Adding new numpy field")
-    newfldname = "".join(["Q",in_field])
+    #newfldname = "".join(["Q",in_field])
      
     #print("Assign Quantiles")
     out = AssignQuant(flcol,ps,minval)
