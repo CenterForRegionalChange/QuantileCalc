@@ -59,7 +59,7 @@ class Toolbox(object):
         self.alias = "crctools"
 
         # List of tool classes associated with this toolbox
-        self.tools = [QuantileCalc1,QuantileCalc2,QuantileCalc3]
+        self.tools = [QuantileCalc1,QuantileCalc2,QuantileCalc3,QuantileCalc4]
 
 
 class QuantileCalc1(object):
@@ -334,7 +334,84 @@ class QuantileCalc3(object):
         
         # Execute function above
         messages.addMessage("Starting Quantile Function")
-        qf.Quantiles(in_features,in_field,in_quant) # Calling function Quantiles from above
+        qf.Quantiles1(in_features,in_field,in_quant) # Calling function Quantiles from above
+        messages.addMessage("Quantile Function Complete")
+        
+        return
+
+class QuantileCalc4(object):
+    def __init__(self):
+        """Define the tool (tool name is the name of the class)."""
+        self.label = "Quantile Calculator 4: Calls function from external module that also calls other functions"
+        self.description = "Calls a function from a module that also calls functions"
+        self.canRunInBackground = False
+        self.category = None
+
+    def getParameterInfo(self):
+        """Define parameter definitions"""
+        
+        param0 = arcpy.Parameter(
+            displayName="Input Features",
+            name="in_features",
+            datatype="GPFeatureLayer",
+            parameterType="Required",
+            direction="Input")
+        
+        param1 = arcpy.Parameter(
+            displayName="Input Field",
+            name="in_field",
+            datatype="Field",
+            parameterType="Required",
+            direction="Input")
+        param1.parameterDependencies = [param0.name]
+ 
+        param2 = arcpy.Parameter(
+            displayName="Number of Quantiles",
+            name="in_quant",
+            datatype="GPLong",
+            parameterType="Required",
+            direction="Input")
+         
+        
+        param3 = arcpy.Parameter(
+            displayName="Output Features",
+            name="out_features", 
+            datatype="GPFeatureLayer",
+            parameterType="Derived",
+            direction="Output")
+        param3.parameterDependencies = [param0.name]
+        param3.schema.clone = True
+        
+        params = [param0,param1,param2,param3] 
+
+        return params
+
+    def isLicensed(self):
+        """Set whether tool is licensed to execute."""
+        return True
+
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal
+        validation is performed.  This method is called whenever a parameter
+        has been changed."""
+        return
+
+    def updateMessages(self, parameters):
+        """Modify the messages created by internal validation for each tool
+        parameter.  This method is called after internal validation."""
+        return
+
+    def execute(self, parameters, messages):
+        """The source code of the tool."""
+        
+        # Get the variables
+        in_features = parameters[0].valueAsText
+        in_field = parameters[1].valueAsText
+        in_quant = parameters[2].valueAsText
+        
+        # Execute function above
+        messages.addMessage("Starting Quantile Function")
+        qf.Quantiles2(in_features,in_field,in_quant) # Calling function Quantiles from above
         messages.addMessage("Quantile Function Complete")
         
         return
