@@ -9,34 +9,92 @@ A Utility wrapper for assigning quantiles to many fields in a dataset.
 
 """
 
-
-
 import arcpy
-import QuantFunc as qf
 import os
+import arcpy.da as da
+import numpy as np
+import numpy.lib.recfunctions as rfn
 
-# Input Datast
-dataset = r"D:\Projects\crc\QuantileCalc\testing\Quantiles.gdb\ROI_1213_Q2"
+def AssignQuant(a,pso,minval):
+    ps = [x for x in pso] # converting to a list from an array for ease of use
+    ps = [minval] + ps
+    print(ps)
+    out = []
+    rng = range(1,len(ps)+1)
+    for x in a:
+        for i in rng: 
+            if  ps[i-1] <= x <= ps[i]:
+                out.append(i)
+                break
 
-# List of fields to run
-fldlist = ['people_mean','place_mean','edppl_mean','ecppl_mean','hsppl_mean','moppl_mean','enppl_mean','soppl_mean','edplc_mean','ecplc_mean','hsplc_mean','enplc_mean','soplc_mean','postsec','prof_math','prof_ela','truant','emp','above200fpl','ownhome','hsg30','vehicles','comm30','hsi_rfc','hlthwt','teenb','ypll_rate','voted10','englishwell','grad_rate','ucgrads','exp_ed','expsusp','jobs_pc5','jobgr5','hqjobrat','banks_pc5','bizgr5','occup1less','affhousing','pm25','pncare','foodaccess','hcprov_pc5','citizen','sameres']
+    outarr = np.array(out)
+    return(outarr)
 
-# Setting up feature layer for queries. This line is needed regardless of whether you're filtering based on a query.
-arcpy.MakeFeatureLayer_management(dataset, "quant_lyr")
+def Quantiles(in_features, in_field, in_quant):
+    #print("converting to numpy")
+    nparray = da.FeatureClassToNumPyArray(in_features,["OID@",in_field],skip_nulls = True)
+     
+    #print("calculating quantiles")
+    n = 1.0/float(in_quant)
+    qs = [n*x*100 for x in xrange(1,int(in_quant)+1)] #qs is the percentages that the data should be broken at i.e. 20, 40, 60. 80, 100%ile
+    #print(qs)
+     
+    #print("calculating percentiles")
+    flcol = np.array(nparray[[str(in_field)]], np.float)
+    pso = np.percentile(flcol, qs) #pso is the the breakpoints between quantiles
+    minval = flcol.min()
+    #print(ps)
+     
+    #print("Adding new numpy field")
+    newfldname = "".join(["Q",in_field])
+     
+    #print("Assign Quantiles")
+    #quants = AssignQuant(flcol,ps,minval) #quants was previously called "out"
+    # This section was previously the function AssignQuant
+    ps = [x for x in pso] # converting to a list from an array for ease of use
+    ps = [minval] + ps # specify the bottom end
+    print(ps)
+    quantList = []
+    rng = range(1,len(ps)+1)
+    for x in flcol:
+        for i in rng: 
+            if  ps[i-1] <= x <= ps[i]:
+                quantList.append(i)
+                break
 
-qnum = 5
-qdir = 'Normal'
+    quants = np.array(quantList)
+    # End assign quant function
+    
 
-print("Starting")
-for fld in fldlist:
+    nparray2 = rfn.append_fields(nparray, str(newfldname), quants, usemask = False)
+    nparray3 = nparray2[['OID@',str(newfldname)]] # Reduce the numpy array to just OID and the Quantile
+    
+    #print("Extend table to include the new values")
+    da.ExtendTable(in_features,"OBJECTID" ,nparray3,"OID@")
+ 
+    #print("Done")
+
+
+
+
+if __name__ == "__main__":
+    # Input Datast
+    dataset = r"Quantiles.gdb\Roi_data"
+    
+    # field to perform quantilization on 
+    fld='people_mean'
+    
+    # Number of Quantiles
+    qnum = 5
+    
+    print("Starting")
+
     try:
         print("Working on: {fld}".format(fld=fld))
-        whereClause = "" # whereClause = "totpop > 3000"  # or "COUNTYFP10 = '037'"  ## Moving the whereClause inside the loop slows down the operation because it's doing the selection on each iteration, but allows for more specific handling of the layer.
-        arcpy.SelectLayerByAttribute_management ("quant_lyr", "NEW_SELECTION", whereClause)
-        qf.Quantiles("quant_lyr", fld, qnum, qdir)
+        Quantiles(dataset, fld, qnum)
     except Exception, e:
         print("Failed on field")
         print(str(e))
-        
-print("Done")
+            
+    print("Done")
 
